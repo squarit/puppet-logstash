@@ -124,7 +124,7 @@ class logstash::params {
       $service_name       = 'logstash'
       $service_hasrestart = true
       $service_hasstatus  = true
-      $service_pattern    = $service_name
+      $service_pattern    = $logstash::service_name
       $service_providers  = [ 'init' ]
       $defaults_location  = '/etc/sysconfig'
     }
@@ -132,15 +132,14 @@ class logstash::params {
       $service_name       = 'logstash'
       $service_hasrestart = true
       $service_hasstatus  = true
-      $service_pattern    = $service_name
+      $service_pattern    = $logstash::service_name
       $service_providers  = [ 'init' ]
       $defaults_location  = '/etc/default'
     }
     'Darwin': {
       $service_name       = 'net.logstash'
-      $service_hasrestart = true
       $service_hasstatus  = true
-      $service_pattern    = $service_name
+      $service_pattern    = $logstash::service_name
       $service_providers  = [ 'launchd' ]
       $defaults_location  = false
     }

@@ -28,18 +28,19 @@
 #
 # * Richard Pijnenburg <mailto:richard.pijnenburg@elasticsearch.com>
 #
-define logstash::configfile(
+define logstash::configfile (
   $content = undef,
   $source = undef,
-  $order = 10
+  $order = 10,
+  $service_name = $logstash::params::service_name,
 ) {
 
   file_fragment { $name:
-    tag     => "LS_CONFIG_${::fqdn}",
+    tag     => "LS_CONFIG_${::fqdn}_${service_name}",
     content => $content,
     source  => $source,
     order   => $order,
-    before  => [ File_concat['ls-config'] ]
+    before  => [ File_concat["ls-config_${service_name}"] ]
   }
 
 }

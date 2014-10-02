@@ -8,8 +8,9 @@ describe 'logstash', :type => 'class' do
 
       let :facts do {
         :operatingsystem => distro,
-        :kernel => 'Linux',
-        :osfamily => 'Debian'
+        :kernel    => 'Linux',
+        :osfamily  => 'Debian',
+        :lsbdistid => 'Debian'
       } end
 
       context 'main class tests' do
@@ -32,7 +33,7 @@ describe 'logstash', :type => 'class' do
         it { should contain_file('/etc/logstash/plugins/logstash/filters').with(:require => 'File[/etc/logstash]') }
         it { should contain_file('/etc/logstash/plugins/logstash/codecs').with(:require => 'File[/etc/logstash]') }
 
-        it { should contain_file_concat('ls-config') }
+        it { should contain_file_concat('ls-config_logstash') }
 
       end
 

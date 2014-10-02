@@ -19,14 +19,28 @@
 #
 # * Richard Pijnenburg <mailto:richard.pijnenburg@elasticsearch.com>
 #
-define logstash::service::init{
+define logstash::service::init (
+  $ensure             = $logstash::ensure,
+  $status             = $logstash::status,
+  $restart_on_change  = $logstash::restart_on_change,
+  $init_defaults_file = $logstash::init_defaults_file,
+  $init_defaults      = $logstash::init_defaults,
+  $init_template      = $logstash::init_template,
+  $defaults_location  = $logstash::params::defaults_location,
+  $service_hasstatus  = $logstash::params::service_hasstatus,
+  $service_hasrestart = $logstash::params::service_hasrestart,
+  $service_pattern    = $logstash::params::service_pattern,
+  $configdir          = $logstash::configdir,
+  $logstash_user      = $logstash::logstash_user,
+  $logstash_group     = $logstash::logstash_group,
+) {
 
   #### Service management
 
   # set params: in operation
-  if $logstash::ensure == 'present' {
+  if $ensure == 'present' {
 
-    case $logstash::status {
+    case $status {
       # make sure service is currently running, start it on boot
       'enabled': {
         $service_ensure = 'running'
@@ -52,7 +66,7 @@ define logstash::service::init{
       # note: don't forget to update the parameter check in init.pp if you
       #       add a new or change an existing status.
       default: {
-        fail("\"${logstash::status}\" is an unknown service status value")
+        fail("\"${status}\" is an unknown service status value")
       }
     }
 
@@ -66,19 +80,19 @@ define logstash::service::init{
 
   }
 
-  $notify_service = $logstash::restart_on_change ? {
+  $notify_service = $restart_on_change ? {
     true  => Service[$name],
     false => undef,
   }
 
 
-  if ( $logstash::status != 'unmanaged' ) {
+  if ( $status != 'unmanaged' ) {
 
     # defaults file content. Either from a hash or file
-    if ($logstash::init_defaults_file != undef) {
+    if ($init_defaults_file != undef) {
       $defaults_content = undef
-      $defaults_source  = $logstash::init_defaults_file
-    } elsif ($logstash::init_defaults != undef and is_hash($logstash::init_defaults) ) {
+      $defaults_source  = $init_defaults_file
+    } elsif ($init_defaults != undef and is_hash($init_defaults) ) {
       $defaults_content = template("${module_name}/etc/sysconfig/defaults.erb")
       $defaults_source  = undef
     } else {
@@ -89,8 +103,8 @@ define logstash::service::init{
     # Check if we are going to manage the defaults file.
     if ( $defaults_content != undef or $defaults_source != undef ) {
 
-      file { "${logstash::params::defaults_location}/${name}":
-        ensure  => $logstash::ensure,
+      file { "${defaults_location}/${name}":
+        ensure  => $ensure,
         source  => $defaults_source,
         content => $defaults_content,
         owner   => 'root',
@@ -103,11 +117,11 @@ define logstash::service::init{
     }
 
     # init file from template
-    if ($logstash::init_template != undef) {
+    if ($init_template != undef) {
 
       file { "/etc/init.d/${name}":
-        ensure  => $logstash::ensure,
-        content => template($logstash::init_template),
+        ensure  => $ensure,
+        content => template($init_template),
         owner   => 'root',
         group   => 'root',
         mode    => '0755',
@@ -119,14 +133,26 @@ define logstash::service::init{
 
   }
 
+  # create the config file
+  file_concat { "ls-config_${name}":
+    ensure  => 'present',
+    tag     => "LS_CONFIG_${::fqdn}_${name}",
+    path    => "${configdir}/conf.d/${name}.conf",
+    owner   => $logstash_user,
+    group   => $logstash_group,
+    mode    => '0644',
+    notify  => $notify_service,
+    require => File[ "${configdir}/conf.d" ]
+  }
+
   # action
   service { $name:
     ensure     => $service_ensure,
     enable     => $service_enable,
     name       => $name,
-    hasstatus  => $logstash::params::service_hasstatus,
-    hasrestart => $logstash::params::service_hasrestart,
-    pattern    => $logstash::params::service_pattern,
+    hasstatus  => $service_hasstatus,
+    hasrestart => $service_hasrestart,
+    pattern    => $service_pattern,
   }
 
 }
