@@ -35,12 +35,11 @@ define logstash::configfile (
   $service_name = $logstash::params::service_name,
 ) {
 
-  file_fragment { $name:
-    tag     => "LS_CONFIG_${::fqdn}_${service_name}",
+  concat::fragment { $name:
+    target  => "ls_config_${service_name}",
     content => $content,
     source  => $source,
     order   => $order,
-    before  => [ File_concat["ls-config_${service_name}"] ]
   }
 
 }

@@ -134,9 +134,8 @@ define logstash::service::init (
   }
 
   # create the config file
-  file_concat { "ls-config_${name}":
+  concat { "ls_config_${name}":
     ensure  => 'present',
-    tag     => "LS_CONFIG_${::fqdn}_${name}",
     path    => "${configdir}/conf.d/${name}.conf",
     owner   => $logstash_user,
     group   => $logstash_group,
