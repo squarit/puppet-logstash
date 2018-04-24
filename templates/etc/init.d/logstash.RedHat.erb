@@ -50,6 +50,9 @@ if [ -f "$DEFAULT" ]; then
   . "$DEFAULT"
 fi
 
+mkdir -p /var/run/logstash
+chown logstash:logstash /var/run/logstash
+
 # Define other required variables
 PID_FILE=${LS_PIDFILE}
 
